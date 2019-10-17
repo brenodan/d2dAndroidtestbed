@@ -17,6 +17,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.ACTION_RESP;
 
@@ -28,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private String remoteIp = "localhost";
     private int remotePort = 4465;
 
+    private Boolean isServer = false;
+
     private RicciD2DBroadcastReceiver ricciReceiver = null;
     private RicciD2DManager ricciD2DManager = null;
 
@@ -37,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void setRemotePort(int remotePort) {
         this.remotePort = remotePort;
+    }
+
+    public String getMyIp(){
+        return this.myIp;
     }
 
     public void setRemoteIp(String remoteIp) {
@@ -61,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         ricciReceiver = new RicciD2DBroadcastReceiver();
         registerReceiver(ricciReceiver, filter);
+
+        setMyIp();
+
+        final EditText myIpIn = (EditText) findViewById(R.id.editText2);
+        myIpIn.setText(this.myIp);
 
     }
 
@@ -87,6 +101,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void sendMessage(View view){
+
+
+
+
+    }
+
     public void setMyIp() {
 
         RemoteUtils remoteUtils = new RemoteUtils();
@@ -94,95 +115,4 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("My ip address is: " + this.myIp);
     }
 
-}
-
-
-class D2DClientCommunicator extends Thread {
-
-    private int port = 4456;
-    private String ip = "localhost";
-    private D2DDataType dataType = D2DDataType.RemoteIntent;
-    private RemoteObject remoteObject;
-
-    public D2DClientCommunicator (int port, String ip, D2DDataType dataType, RemoteObject remoteObject){
-
-        if (port > -1) {
-            this.port = port;
-        }
-
-        if (ip != null) {
-            this.ip = ip;
-        }
-
-        if(dataType != null) {
-            this.dataType = dataType;
-        }
-
-        this.remoteObject = remoteObject;
-
-    }
-
-    public void run (){
-
-        try {
-
-            CallHandler callHandler = new CallHandler();
-            Client client = new Client(this.ip, this.port, callHandler);
-
-            D2DDataExchangeInterface d2dImplementation = (D2DDataExchangeInterface) client.getGlobal(
-                    D2DDataExchangeInterface.class
-            );
-
-            switch (this.dataType) {
-
-                case Intent:
-                    d2dImplementation.setIntent(this.remoteObject.getIntent());
-                    break;
-
-                case Object:
-                    d2dImplementation.setObject(this.remoteObject.getObject());
-                    break;
-
-                case RemoteIntent:
-                    d2dImplementation.setRemoteIntent(this.remoteObject.getRemoteIntent());
-                    break;
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        }
-    }
-}
-
-class D2DServerCommunicator extends Thread {
-
-    private int port = 4455;
-
-    public D2DServerCommunicator (int port){
-
-        if (port > -1) {
-           this.port = port;
-        }
-
-    }
-
-    public void run (){
-
-        try {
-
-            CallHandler callHandler = new CallHandler();
-            D2DDataExchangeInterface d2dImplementation = new D2DDataExchangeImplementation();
-            callHandler.registerGlobal(D2DDataExchangeInterface.class, d2dImplementation);
-
-            Server server = new Server();
-            server.bind(this.port, callHandler);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        }
-    }
 }

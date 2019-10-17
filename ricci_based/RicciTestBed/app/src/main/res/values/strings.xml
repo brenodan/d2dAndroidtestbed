@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">RicciTestBed</string>
+    <string name="myIp">My Ip:</string>
+    <string name="remoteIp">Remote Ip:</string>
+    <string name="myPort">My Port:</string>
+    <string name="remotePort">Remote Port:</string>
+    <string name="goBtn">Go</string>
+    <string name="inMyIp">localhost</string>
+    <string name="inMyPort">4455</string>
+    <string name="inRemoteIp">localhost</string>
+    <string name="inRemotePort">4465</string>
+    <string name="isServer">Is this device the server?</string>
 </resources>
