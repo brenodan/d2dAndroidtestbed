@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         ricciReceiver = new RicciD2DBroadcastReceiver();
         registerReceiver(ricciReceiver, filter);
 
-
     }
 
     public void initializeChannel() {
