@@ -13,8 +13,10 @@ import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataExchangeInter
 import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataType;
 import evolution.lancer.breno.riccitestbed.D2DCommunication.RemoteObject;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.View;
@@ -86,11 +88,6 @@ public class MainActivity extends AppCompatActivity {
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
     }
 
-    public void sendRequest(RemoteIntent remoteIntent){
-
-        ricciD2DManager.sendRequest(remoteIntent);
-    }
-
     public RemoteIntent getContactIntent() {
 
         RemoteIntent remoteIntent = new RemoteIntent();
@@ -105,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void setUpServer(View view) {
 
+        final EditText remoteIpIn = (EditText) findViewById(R.id.editText4);
+        setRemoteIp(remoteIpIn.getText().toString());
         int temp = myPort;
         myPort = remotePort;
         remotePort = temp;
@@ -115,8 +114,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void sendMessage(View view){
 
+        final EditText remoteIpIn = (EditText) findViewById(R.id.editText4);
+        setRemoteIp(remoteIpIn.getText().toString());
         initializeChannel();
-        ricciD2DManager.sendRequest(getContactIntent());
+        //ricciD2DManager.sendRequest(getContactIntent());
+        new AsyncCaller().execute();
     }
 
     public void setMyIp() {
@@ -126,4 +128,37 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("My ip address is: " + this.myIp);
     }
 
+    private class AsyncCaller extends AsyncTask<Void, Void, Void> {
+        ProgressDialog pdLoading = new ProgressDialog(MainActivity.this);
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.show();
+        }
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            //this method will be running on background thread so don't update UI frome here
+            //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
+            ricciD2DManager.sendRequest(getContactIntent());
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+        }
+
+    }
+
 }
+
