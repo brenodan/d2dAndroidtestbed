@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import evolution.lancer.breno.ricci2lib.lipermi.handler.CallHandler;
 import evolution.lancer.breno.ricci2lib.lipermi.net.Client;
 import evolution.lancer.breno.ricci2lib.lipermi.net.Server;
+import evolution.lancer.breno.ricci2lib.ricci.D2DCommunication.RicciD2DManager;
 import evolution.lancer.breno.ricci2lib.ricci.RemoteIntent;
+import evolution.lancer.breno.ricci2lib.ricci.receiver.RicciD2DBroadcastReceiver;
 import evolution.lancer.breno.ricci2lib.ricci.utils.RemoteUtils;
 import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataExchangeImplementation;
 import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataExchangeInterface;
@@ -12,8 +14,11 @@ import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataType;
 import evolution.lancer.breno.riccitestbed.D2DCommunication.RemoteObject;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+
+import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.ACTION_RESP;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private String remoteIp = "localhost";
     private int remotePort = 4465;
 
+    private RicciD2DBroadcastReceiver ricciReceiver = null;
+    private RicciD2DManager ricciD2DManager = null;
+
     public void setMyPort(int myPort) { this.myPort = myPort; }
 
     public int getMyPort() { return this.myPort; }
@@ -31,12 +39,12 @@ public class MainActivity extends AppCompatActivity {
         this.remotePort = remotePort;
     }
 
-    public void setRemoteIp (String remoteIp) {
+    public void setRemoteIp(String remoteIp) {
         this.remoteIp = remoteIp;
         System.out.println("Remote Ip address is: "  + this.remoteIp);
     }
 
-    public String getRemoteIp (){
+    public String getRemoteIp(){
         return this.remoteIp;
     }
 
@@ -48,24 +56,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        IntentFilter filter = new IntentFilter(ACTION_RESP);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        ricciReceiver = new RicciD2DBroadcastReceiver();
+        registerReceiver(ricciReceiver, filter);
+
+
     }
 
+    public void initializeChannel() {
 
-    public void initializeServer() {
-
-        D2DServerCommunicator d2dServer = new D2DServerCommunicator(getMyPort());
-        d2dServer.start();
-
+        ricciD2DManager = new RicciD2DManager(this.remoteIp, this.remotePort, this.myIp, this.myPort);
+        ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
     }
 
-    public void sendRequest(){
+    public void sendRequest(RemoteIntent remoteIntent){
 
-        RemoteIntent remoteIntent = getContactIntent();
-        D2DClientCommunicator d2dClient = new D2DClientCommunicator(this.remotePort, this.remoteIp,
-                D2DDataType.RemoteIntent, new RemoteObject(remoteIntent));
-        d2dClient.run();
+        ricciD2DManager.sendRequest(remoteIntent);
     }
-
 
     public RemoteIntent getContactIntent() {
 
@@ -80,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setMyIp() {
+
         RemoteUtils remoteUtils = new RemoteUtils();
         this.myIp = remoteUtils.getIPAddress(true);
         System.out.println("My ip address is: " + this.myIp);
