@@ -55,7 +55,8 @@
                 android:id="@+id/switch1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/isServer" />
+                android:text="@string/isServer"
+                android:onClick="setUpServer"/>
 
             <Button
                 android:id="@+id/button"

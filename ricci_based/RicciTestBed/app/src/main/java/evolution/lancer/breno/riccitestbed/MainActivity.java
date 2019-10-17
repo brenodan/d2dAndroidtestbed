@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -75,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         final EditText myIpIn = (EditText) findViewById(R.id.editText2);
         myIpIn.setText(this.myIp);
+
 
     }
 
@@ -101,11 +103,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void setUpServer(View view) {
+
+        int temp = myPort;
+        myPort = remotePort;
+        remotePort = temp;
+        isServer = true;
+        initializeChannel();
+
+    }
+
     public void sendMessage(View view){
 
-
-
-
+        initializeChannel();
+        ricciD2DManager.sendRequest(getContactIntent());
     }
 
     public void setMyIp() {
