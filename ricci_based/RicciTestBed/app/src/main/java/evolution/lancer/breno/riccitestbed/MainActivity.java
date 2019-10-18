@@ -4,19 +4,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import evolution.lancer.breno.ricci2lib.ricci.D2DCommunication.RicciD2DManager;
 import evolution.lancer.breno.ricci2lib.ricci.RemoteIntent;
 import evolution.lancer.breno.ricci2lib.ricci.receiver.RicciD2DBroadcastReceiver;
+import evolution.lancer.breno.ricci2lib.ricci.services.BasicIntentService;
 import evolution.lancer.breno.ricci2lib.ricci.utils.RemoteUtils;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
 
+import static evolution.lancer.breno.ricci2lib.ricci.constants.UtilityConstants.OUT_COPY_REPLY_MSG;
+import static evolution.lancer.breno.ricci2lib.ricci.utils.CopyUtils.processDataForTransmission;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.ACTION_RESP;
+import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.REQUEST_COPY_TRANSMISSION;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,6 +86,40 @@ public class MainActivity extends AppCompatActivity {
 
         ricciD2DManager = new RicciD2DManager(this.remoteIp, this.remotePort, this.myIp, this.myPort, this.getApplicationContext());
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
+    }
+
+    public Intent handleCopyIntent(Intent data) {
+
+        Intent intent = new Intent(getApplicationContext(), BasicIntentService.class);
+        Uri dataUri = data.getData();
+        Cursor cursor = getContentResolver().query(dataUri, null, null, null, null);
+        Intent sendIntent = processDataForTransmission(cursor);
+        intent.putExtra(OUT_COPY_REPLY_MSG, sendIntent);
+        cursor.close();
+        return intent;
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent resultIntent) {
+        super.onActivityResult(requestCode, resultCode, resultIntent);
+
+        switch (requestCode) {
+
+            case REQUEST_COPY_TRANSMISSION: {
+                if(resultCode == RESULT_OK) {
+                    Log.d(this.getClass().toString(), "request copy transmission");
+                    Intent intent = handleCopyIntent(resultIntent);
+                    startService(intent);
+                }
+            }
+            break;
+
+            default:
+                break;
+
+        }
+
     }
 
     public RemoteIntent getContactIntent() {
