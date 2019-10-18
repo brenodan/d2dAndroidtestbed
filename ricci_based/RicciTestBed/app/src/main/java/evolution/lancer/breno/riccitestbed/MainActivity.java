@@ -1,17 +1,10 @@
 package evolution.lancer.breno.riccitestbed;
 
 import androidx.appcompat.app.AppCompatActivity;
-import evolution.lancer.breno.ricci2lib.lipermi.handler.CallHandler;
-import evolution.lancer.breno.ricci2lib.lipermi.net.Client;
-import evolution.lancer.breno.ricci2lib.lipermi.net.Server;
 import evolution.lancer.breno.ricci2lib.ricci.D2DCommunication.RicciD2DManager;
 import evolution.lancer.breno.ricci2lib.ricci.RemoteIntent;
 import evolution.lancer.breno.ricci2lib.ricci.receiver.RicciD2DBroadcastReceiver;
 import evolution.lancer.breno.ricci2lib.ricci.utils.RemoteUtils;
-import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataExchangeImplementation;
-import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataExchangeInterface;
-import evolution.lancer.breno.riccitestbed.D2DCommunication.D2DDataType;
-import evolution.lancer.breno.riccitestbed.D2DCommunication.RemoteObject;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -21,7 +14,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
+
 
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.ACTION_RESP;
 
@@ -145,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
             //this method will be running on background thread so don't update UI frome here
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             ricciD2DManager.sendRequest(getContactIntent());
-
             return null;
         }
 
@@ -154,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
 
             //this method will be running on UI thread
-
             pdLoading.dismiss();
         }
 
