@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void initializeChannel() {
 
-        ricciD2DManager = new RicciD2DManager(this.remoteIp, this.remotePort, this.myIp, this.myPort);
+        ricciD2DManager = new RicciD2DManager(this.remoteIp, this.remotePort, this.myIp, this.myPort, this.getApplicationContext());
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
     }
 
