@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setRemoteIp(String remoteIp) {
         this.remoteIp = remoteIp;
-        System.out.println("Remote Ip address is: "  + this.remoteIp);
+        System.out.println("Remote Ip address is: " + this.remoteIp);
     }
 
     public String getRemoteIp(){
