@@ -5,6 +5,7 @@ import evolution.lancer.breno.ricci2lib.ricci.D2DCommunication.RicciD2DManager;
 import evolution.lancer.breno.ricci2lib.ricci.RemoteIntent;
 import evolution.lancer.breno.ricci2lib.ricci.receiver.RicciD2DBroadcastReceiver;
 import evolution.lancer.breno.ricci2lib.ricci.services.BasicIntentService;
+import evolution.lancer.breno.ricci2lib.ricci.utils.D2DTransmissionUtils;
 import evolution.lancer.breno.ricci2lib.ricci.utils.RemoteUtils;
 
 import android.app.ProgressDialog;
@@ -73,11 +74,13 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        //registering the broadcast receiver
         IntentFilter filter = new IntentFilter(ACTION_RESP);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         ricciReceiver = new RicciD2DBroadcastReceiver();
         registerReceiver(ricciReceiver, filter);
 
+        //getting my ip information
         setMyIp();
 
         final EditText myIpIn = (EditText) findViewById(R.id.editText2);
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
     }
 
+    /*
     public Intent handleCopyIntent(Intent data) {
 
         Intent intent = new Intent(getApplicationContext(), BasicIntentService.class);
@@ -103,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         return intent;
 
     }
-
+    */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent resultIntent) {
         super.onActivityResult(requestCode, resultCode, resultIntent);
@@ -113,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_COPY_TRANSMISSION: {
                 if(resultCode == RESULT_OK) {
                     Log.d(this.getClass().toString(), "request copy transmission");
-                    Intent intent = handleCopyIntent(resultIntent);
+                    Intent intent = new D2DTransmissionUtils(this).handleCopyIntent(resultIntent);
                     startService(intent);
                 }
             }
