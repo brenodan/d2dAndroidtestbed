@@ -23,9 +23,11 @@ import android.widget.EditText;
 
 
 import static evolution.lancer.breno.ricci2lib.ricci.constants.UtilityConstants.OUT_COPY_REPLY_MSG;
+import static evolution.lancer.breno.ricci2lib.ricci.constants.UtilityConstants.OUT_STREAM_REPLY_MSG;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.CopyUtils.processDataForTransmission;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.ACTION_RESP;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.REQUEST_COPY_TRANSMISSION;
+import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.REQUEST_STREAM_TRANSMISSION;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -95,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
     }
 
-    /*
     public Intent handleCopyIntent(Intent data) {
 
         Intent intent = new Intent(getApplicationContext(), BasicIntentService.class);
@@ -107,29 +108,46 @@ public class MainActivity extends AppCompatActivity {
         return intent;
 
     }
-    */
+
+    public Intent handleStreamIntent(Intent data){
+
+        Intent intent = new Intent(getApplicationContext(), BasicIntentService.class);
+        intent.putExtra(OUT_STREAM_REPLY_MSG, data);
+        return intent;
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent resultIntent) {
         super.onActivityResult(requestCode, resultCode, resultIntent);
 
-        switch (requestCode) {
+        if (resultCode == RESULT_OK) {
 
-            case REQUEST_COPY_TRANSMISSION: {
-                if(resultCode == RESULT_OK) {
+            switch (requestCode) {
+
+                case REQUEST_COPY_TRANSMISSION: {
                     Log.d(this.getClass().toString(), "request copy transmission");
                     Intent intent = new D2DTransmissionUtils(this).handleCopyIntent(resultIntent);
                     startService(intent);
                 }
-            }
-            break;
-
-            default:
                 break;
 
+                case REQUEST_STREAM_TRANSMISSION: {
+                    Log.d(this.getClass().toString(), "request stream transmission");
+                    Intent intent = handleStreamIntent(resultIntent);
+                    startService(intent);
+                }
+                break;
+
+                default:
+                    break;
+
+            }
         }
 
     }
 
+    //Example of copy remote intent
     public RemoteIntent getContactIntent() {
 
         RemoteIntent remoteIntent = new RemoteIntent();
@@ -141,6 +159,17 @@ public class MainActivity extends AppCompatActivity {
         return remoteIntent;
 
     }
+
+    //Example of stream remote intent
+    public RemoteIntent getStreamIntent() {
+
+        RemoteIntent remoteIntent = new RemoteIntent();
+        remoteIntent.setAction(Intent.ACTION_GET_CONTENT);
+        remoteIntent.addCategory(Intent.CATEGORY_OPENABLE);
+        remoteIntent.setType("*/*");
+        return remoteIntent;
+    }
+
 
     public void setUpServer(View view) {
 
@@ -154,13 +183,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void sendMessage(View view){
+    public void sendCopyMessage(View view){
 
         final EditText remoteIpIn = (EditText) findViewById(R.id.editText4);
         setRemoteIp(remoteIpIn.getText().toString());
         initializeChannel();
         //ricciD2DManager.sendRequest(getContactIntent());
-        new AsyncCaller().execute();
+        new AsyncCopyCaller().execute();
+    }
+
+    public void sendStreamMessage(View view){
+
+        final EditText remoteIpIn = (EditText) findViewById(R.id.editText4);
+        setRemoteIp(remoteIpIn.getText().toString());
+        initializeChannel();
+        //ricciD2DManager.sendRequest(getContactIntent());
+        new AsyncStreamCaller().execute();
     }
 
     public void setMyIp() {
@@ -170,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("My ip address is: " + this.myIp);
     }
 
-    private class AsyncCaller extends AsyncTask<Void, Void, Void> {
+    private class AsyncCopyCaller extends AsyncTask<Void, Void, Void> {
         ProgressDialog pdLoading = new ProgressDialog(MainActivity.this);
 
         @Override
@@ -187,6 +225,36 @@ public class MainActivity extends AppCompatActivity {
             //this method will be running on background thread so don't update UI frome here
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             ricciD2DManager.sendRequest(getContactIntent());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            //this method will be running on UI thread
+            pdLoading.dismiss();
+        }
+
+    }
+
+    private class AsyncStreamCaller extends AsyncTask<Void, Void, Void> {
+        ProgressDialog pdLoading = new ProgressDialog(MainActivity.this);
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.show();
+        }
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            //this method will be running on background thread so don't update UI frome here
+            //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
+            ricciD2DManager.sendRequest(getStreamIntent());
             return null;
         }
 
