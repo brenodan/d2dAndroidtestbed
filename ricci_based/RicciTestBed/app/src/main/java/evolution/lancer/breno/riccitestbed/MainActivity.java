@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
     }
 
+    /*
     public Intent handleCopyIntent(Intent data) {
 
         Intent intent = new Intent(getApplicationContext(), BasicIntentService.class);
@@ -116,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         return intent;
 
     }
-
+    */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent resultIntent) {
         super.onActivityResult(requestCode, resultCode, resultIntent);
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
                 case REQUEST_STREAM_TRANSMISSION: {
                     Log.d(this.getClass().toString(), "request stream transmission");
-                    Intent intent = handleStreamIntent(resultIntent);
+                    Intent intent = new D2DTransmissionUtils(this).handleStreamIntent(resultIntent);
                     startService(intent);
                 }
                 break;
