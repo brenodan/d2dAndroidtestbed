@@ -6,6 +6,7 @@
     <string name="remotePort">Remote Port:</string>
     <string name="goBtn">Copy Intent</string>
     <string name="goBtn2">Stream Intent</string>
+    <string name="goBtn3">Remote Intent</string>
     <string name="inMyIp">localhost</string>
     <string name="inMyPort">4455</string>
     <string name="inRemoteIp">localhost</string>

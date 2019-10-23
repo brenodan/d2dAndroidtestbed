@@ -3,7 +3,9 @@ package evolution.lancer.breno.riccitestbed;
 import androidx.appcompat.app.AppCompatActivity;
 import evolution.lancer.breno.ricci2lib.ricci.D2DCommunication.RicciD2DManager;
 import evolution.lancer.breno.ricci2lib.ricci.RemoteIntent;
+import evolution.lancer.breno.ricci2lib.ricci.constants.Transfer;
 import evolution.lancer.breno.ricci2lib.ricci.receiver.RicciD2DBroadcastReceiver;
+import evolution.lancer.breno.ricci2lib.ricci.remote.RemoteAssistant;
 import evolution.lancer.breno.ricci2lib.ricci.services.BasicIntentService;
 import evolution.lancer.breno.ricci2lib.ricci.utils.D2DTransmissionUtils;
 import evolution.lancer.breno.ricci2lib.ricci.utils.RemoteUtils;
@@ -22,11 +24,10 @@ import android.view.View;
 import android.widget.EditText;
 
 
-import static evolution.lancer.breno.ricci2lib.ricci.constants.UtilityConstants.OUT_COPY_REPLY_MSG;
-import static evolution.lancer.breno.ricci2lib.ricci.constants.UtilityConstants.OUT_STREAM_REPLY_MSG;
-import static evolution.lancer.breno.ricci2lib.ricci.utils.CopyUtils.processDataForTransmission;
+import static evolution.lancer.breno.ricci2lib.ricci.constants.UtilityConstants.OUT_REMOTE_REPLY_MSG;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.ACTION_RESP;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.REQUEST_COPY_TRANSMISSION;
+import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.REQUEST_REMOTE_TRANSMISSION;
 import static evolution.lancer.breno.ricci2lib.ricci.utils.Util.REQUEST_STREAM_TRANSMISSION;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,6 +68,30 @@ public class MainActivity extends AppCompatActivity {
         return remotePort;
     }
 
+    public void configureRicciBroadcastReceiver(RemoteAssistant remoteAssistant, Object object) {
+
+        this.ricciReceiver.setRemoteAssistant(remoteAssistant);
+        this.ricciReceiver.setRemoteSerializableObject(object);
+    }
+
+    public RemoteIntent getRemoteIntent() {
+
+        RemoteIntent remoteIntent = new RemoteIntent();
+        remoteIntent.setAction(Intent.ACTION_PICK);
+        remoteIntent.setTransferMethod(Transfer.REMOTE);
+        remoteIntent.setData(ContactsContract.Contacts.CONTENT_URI);
+        remoteIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+
+        RemoteAssistant remoteAssistant = new RemoteAssistant();
+        remoteAssistant.setGettoString(true);
+        remoteAssistant.setGethashCode(true);
+        configureRicciBroadcastReceiver(remoteAssistant, "string");
+
+        return remoteIntent;
+
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,10 +116,40 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void checkRemoteResultsHolder() {
+        System.out.println("Waiting for response");
+        AsyncTask.execute(() -> {
+
+            while (this.ricciReceiver.remoteResultsHolder == null) {
+
+               System.out.println("Waiting for response");
+               try {
+                   Thread.sleep(1000);
+               } catch (Exception e) {
+                   e.printStackTrace();
+               }
+            }
+
+            System.out.println("@@ " + ricciReceiver.remoteResultsHolder.toString());
+            System.out.println("@@ " + ricciReceiver.remoteResultsHolder.getGethashCode());
+
+        });
+
+    }
+
+
     public void initializeChannel() {
 
         ricciD2DManager = new RicciD2DManager(this.remoteIp, this.remotePort, this.myIp, this.myPort, this.getApplicationContext());
         ricciReceiver.setRicciD2DManager(this.ricciD2DManager);
+    }
+
+    public Intent handleRemoteIntent(Intent data) {
+
+        Intent intent = new Intent(this, BasicIntentService.class);
+        intent.putExtra(OUT_REMOTE_REPLY_MSG, data);
+        return intent;
+
     }
 
     /*
@@ -139,6 +194,13 @@ public class MainActivity extends AppCompatActivity {
                     startService(intent);
                 }
                 break;
+
+                case REQUEST_REMOTE_TRANSMISSION: {
+                    Log.d(this.getClass().toString(), "request remote transmission");
+                    Intent intent = handleRemoteIntent(resultIntent);
+                    startService(intent);
+
+                }
 
                 default:
                     break;
@@ -202,6 +264,14 @@ public class MainActivity extends AppCompatActivity {
         new AsyncStreamCaller().execute();
     }
 
+    public void sendRemoteMessage(View view) {
+
+        final EditText remoteIpIn = (EditText) findViewById(R.id.editText4);
+        setRemoteIp(remoteIpIn.getText().toString());
+        initializeChannel();
+        new AsyncRemoteCaller().execute();
+    }
+
     public void setMyIp() {
 
         RemoteUtils remoteUtils = new RemoteUtils();
@@ -226,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
             //this method will be running on background thread so don't update UI frome here
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             ricciD2DManager.sendRequest(getContactIntent());
+            checkRemoteResultsHolder();
             return null;
         }
 
@@ -268,6 +339,37 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private class AsyncRemoteCaller extends AsyncTask<Void, Void, Void> {
+        ProgressDialog pdLoading = new ProgressDialog(MainActivity.this);
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.show();
+        }
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            //this method will be running on background thread so don't update UI frome here
+            //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
+            ricciD2DManager.sendRequest(getRemoteIntent());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            //this method will be running on UI thread
+            pdLoading.dismiss();
+        }
+
+    }
+
 
 }
 
