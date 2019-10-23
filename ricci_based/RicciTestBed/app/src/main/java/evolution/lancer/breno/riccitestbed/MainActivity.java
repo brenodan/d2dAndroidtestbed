@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         remoteIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
 
         RemoteAssistant remoteAssistant = new RemoteAssistant();
-        remoteAssistant.setGettoString(true);
+        remoteAssistant.setGetPrintString(true);
         remoteAssistant.setGethashCode(true);
         configureRicciBroadcastReceiver(remoteAssistant, "string");
 
@@ -296,7 +296,6 @@ public class MainActivity extends AppCompatActivity {
             //this method will be running on background thread so don't update UI frome here
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             ricciD2DManager.sendRequest(getContactIntent());
-            checkRemoteResultsHolder();
             return null;
         }
 
@@ -357,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
             //this method will be running on background thread so don't update UI frome here
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             ricciD2DManager.sendRequest(getRemoteIntent());
+            checkRemoteResultsHolder();
             return null;
         }
 
